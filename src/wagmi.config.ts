@@ -1,13 +1,9 @@
-import { http, createConfig } from "wagmi";
+import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { mainnet, sepolia, hardhat } from "wagmi/chains";
-import { injected, metaMask, walletConnect } from "wagmi/connectors";
 
-export const config = createConfig({
+export const config = getDefaultConfig({
+  appName: "FHEVM StarterKit",
+  projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID!,
   chains: [mainnet, sepolia, hardhat],
-  connectors: [injected(), metaMask()],
-  transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-    [hardhat.id]: http("http://127.0.0.1:8545"),
-  },
+  ssr: false,
 });

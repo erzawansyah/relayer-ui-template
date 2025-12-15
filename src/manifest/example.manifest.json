@@ -1,0 +1,538 @@
+{
+    "manifestVersion": "1.1",
+    "starter": {
+        "id": "sealed-bid-auction",
+        "title": "Sealed Bid Auction",
+        "description": "Auction demo: bids are encrypted, settlement reveals only what is needed.",
+        "category": "patterns",
+        "tags": [
+            "auction",
+            "sealed-bid",
+            "euint32",
+            "ebool",
+            "permissions"
+        ],
+        "docs": {
+            "readme": "./README.md"
+        }
+    },
+    "deployments": [
+        {
+            "id": "sepolia",
+            "label": "Sepolia",
+            "chainId": 11155111,
+            "contracts": [
+                {
+                    "name": "Auction",
+                    "address": "0x1111111111111111111111111111111111111111",
+                    "abi": "./artifacts/contracts/Auction.sol/Auction.json"
+                },
+                {
+                    "name": "AuctionToken",
+                    "address": "0x2222222222222222222222222222222222222222",
+                    "abi": "./artifacts/contracts/AuctionToken.sol/AuctionToken.json"
+                }
+            ],
+            "explorer": {
+                "addressBaseUrl": "https://sepolia.etherscan.io/address/",
+                "txBaseUrl": "https://sepolia.etherscan.io/tx/"
+            },
+            "rpc": {
+                "fallbacks": [
+                    "https://rpc.ankr.com/eth_sepolia"
+                ]
+            }
+        },
+        {
+            "id": "local",
+            "label": "Local",
+            "chainId": 31337,
+            "contracts": [
+                {
+                    "name": "Auction",
+                    "address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "abi": "./artifacts/contracts/Auction.sol/Auction.json"
+                },
+                {
+                    "name": "AuctionToken",
+                    "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                    "abi": "./artifacts/contracts/AuctionToken.sol/AuctionToken.json"
+                }
+            ]
+        }
+    ],
+    "ui": {
+        "tabs": [
+            "read",
+            "write",
+            "helpers"
+        ],
+        "defaultTab": "write",
+        "defaultDeployment": "sepolia",
+        "defaultContract": "Auction",
+        "display": {
+            "showFunctionSearch": true,
+            "showAdvancedToggle": true,
+            "defaultAdvancedOpen": false
+        },
+        "ordering": {
+            "read": [
+                "auctionState",
+                "getMyBidEncrypted",
+                "highestBidEncrypted",
+                "winnerAddress",
+                "tokenBalance"
+            ],
+            "write": [
+                "approveToken",
+                "placeBid",
+                "revealWinner",
+                "withdrawRefund",
+                "adminSettle"
+            ]
+        }
+    },
+    "views": [
+        {
+            "id": "auctionState",
+            "contract": "Auction",
+            "fn": "getState",
+            "label": "Auction State",
+            "description": "Returns auction timing and public state flags.",
+            "group": "State",
+            "advanced": false,
+            "args": [],
+            "out": [
+                {
+                    "name": "startTime",
+                    "label": "startTime",
+                    "format": {
+                        "as": "uint"
+                    }
+                },
+                {
+                    "name": "endTime",
+                    "label": "endTime",
+                    "format": {
+                        "as": "uint"
+                    }
+                },
+                {
+                    "name": "isEnded",
+                    "label": "isEnded",
+                    "format": {
+                        "as": "bool"
+                    }
+                }
+            ],
+            "call": {
+                "buttonLabel": "Call"
+            }
+        },
+        {
+            "id": "highestBidEncrypted",
+            "contract": "Auction",
+            "fn": "getHighestBid",
+            "label": "Highest Bid (Encrypted)",
+            "group": "Encrypted State",
+            "advanced": false,
+            "args": [],
+            "out": [
+                {
+                    "name": "highestBid",
+                    "label": "highestBid",
+                    "enc": "euint32",
+                    "format": {
+                        "as": "hex",
+                        "truncate": true,
+                        "copyButton": true
+                    },
+                    "decrypt": {
+                        "enabled": true,
+                        "label": "Decrypt Highest Bid",
+                        "permissionHint": "If decrypt fails, you likely don't have permission for this ciphertext."
+                    }
+                }
+            ]
+        },
+        {
+            "id": "getMyBidEncrypted",
+            "contract": "Auction",
+            "fn": "getMyBid",
+            "label": "My Bid (Encrypted)",
+            "group": "Encrypted State",
+            "advanced": false,
+            "args": [],
+            "out": [
+                {
+                    "name": "myBid",
+                    "label": "myBid",
+                    "enc": "euint32",
+                    "decrypt": {
+                        "enabled": true,
+                        "label": "Decrypt My Bid",
+                        "permissionHint": "Caller usually has permission for their own bid ciphertext."
+                    }
+                }
+            ]
+        },
+        {
+            "id": "winnerAddress",
+            "contract": "Auction",
+            "fn": "winner",
+            "label": "Winner Address",
+            "group": "Result",
+            "advanced": true,
+            "args": [],
+            "out": [
+                {
+                    "name": "winner",
+                    "label": "winner",
+                    "format": {
+                        "as": "address"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "tokenBalance",
+            "contract": "AuctionToken",
+            "fn": "balanceOf",
+            "label": "Token Balance",
+            "group": "Token",
+            "advanced": false,
+            "args": [
+                {
+                    "name": "account",
+                    "label": "account",
+                    "ui": {
+                        "kind": "text",
+                        "placeholder": "0x..."
+                    },
+                    "constraints": {
+                        "required": true
+                    }
+                }
+            ],
+            "out": [
+                {
+                    "name": "balance",
+                    "label": "balance",
+                    "format": {
+                        "as": "uint"
+                    }
+                }
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "id": "approveToken",
+            "contract": "AuctionToken",
+            "fn": "approve",
+            "label": "Approve Token",
+            "description": "Approve Auction contract to transfer your tokens.",
+            "group": "Token",
+            "advanced": false,
+            "args": [
+                {
+                    "name": "spender",
+                    "label": "spender",
+                    "ui": {
+                        "kind": "text",
+                        "placeholder": "Auction address"
+                    },
+                    "defaults": {
+                        "value": "0x1111111111111111111111111111111111111111"
+                    },
+                    "constraints": {
+                        "required": true
+                    }
+                },
+                {
+                    "name": "amount",
+                    "label": "amount",
+                    "ui": {
+                        "kind": "number",
+                        "placeholder": "amount"
+                    },
+                    "constraints": {
+                        "required": true,
+                        "min": 0
+                    }
+                }
+            ],
+            "tx": {
+                "buttonLabel": "Send",
+                "confirm": {
+                    "enabled": false
+                },
+                "afterSend": [
+                    {
+                        "type": "toast",
+                        "message": "Approve submitted"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "placeBid",
+            "contract": "Auction",
+            "fn": "placeBid",
+            "label": "Place Bid (Encrypted)",
+            "description": "Encrypt your bid and submit. The bid amount stays private.",
+            "group": "Bidding",
+            "advanced": false,
+            "args": [
+                {
+                    "name": "bidAmount",
+                    "label": "bidAmount",
+                    "enc": "euint32",
+                    "proof": "bidProof",
+                    "ui": {
+                        "kind": "number",
+                        "placeholder": "0 - 4294967295",
+                        "help": "Will be encrypted to euint32."
+                    },
+                    "constraints": {
+                        "required": true,
+                        "min": 0,
+                        "max": 4294967295
+                    }
+                },
+                {
+                    "name": "bidProof",
+                    "hidden": true
+                },
+                {
+                    "name": "useShieldedRefund",
+                    "label": "useShieldedRefund",
+                    "enc": "ebool",
+                    "proof": "refundProof",
+                    "ui": {
+                        "kind": "toggle",
+                        "trueLabel": "Yes",
+                        "falseLabel": "No",
+                        "help": "Encrypted preference flag."
+                    },
+                    "constraints": {
+                        "required": true
+                    }
+                },
+                {
+                    "name": "refundProof",
+                    "hidden": true
+                }
+            ],
+            "tx": {
+                "buttonLabel": "Encrypt & Send",
+                "confirm": {
+                    "enabled": true,
+                    "title": "Confirm encrypted bid",
+                    "body": "This will encrypt your bid locally and submit a transaction."
+                },
+                "afterSend": [
+                    {
+                        "type": "toast",
+                        "message": "Bid submitted"
+                    },
+                    {
+                        "type": "refresh",
+                        "target": "read"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "revealWinner",
+            "contract": "Auction",
+            "fn": "revealWinner",
+            "label": "Reveal Winner",
+            "description": "Ends the auction and reveals only the winner address, not all bids.",
+            "group": "Settlement",
+            "advanced": false,
+            "args": [
+                {
+                    "name": "confirmText",
+                    "virtual": true,
+                    "ui": {
+                        "kind": "text",
+                        "label": "Type REVEAL to confirm",
+                        "placeholder": "REVEAL",
+                        "help": "Safety check. Not part of ABI."
+                    },
+                    "constraints": {
+                        "required": true,
+                        "equals": "REVEAL"
+                    }
+                }
+            ],
+            "tx": {
+                "buttonLabel": "End & Reveal",
+                "confirm": {
+                    "enabled": true,
+                    "title": "End auction",
+                    "body": "This action cannot be undone."
+                },
+                "afterSend": [
+                    {
+                        "type": "toast",
+                        "message": "Reveal submitted"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "withdrawRefund",
+            "contract": "Auction",
+            "fn": "withdrawRefund",
+            "label": "Withdraw Refund",
+            "description": "Withdraws refund if you did not win.",
+            "group": "Settlement",
+            "advanced": true,
+            "args": [],
+            "tx": {
+                "buttonLabel": "Withdraw",
+                "afterSend": [
+                    {
+                        "type": "toast",
+                        "message": "Withdraw submitted"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "adminSettle",
+            "contract": "Auction",
+            "fn": "adminSettle",
+            "label": "Admin Settle",
+            "description": "Admin-only settle path (demo only).",
+            "group": "Admin",
+            "advanced": true,
+            "args": [
+                {
+                    "name": "forceWinner",
+                    "label": "forceWinner",
+                    "ui": {
+                        "kind": "text",
+                        "placeholder": "0x..."
+                    },
+                    "constraints": {
+                        "required": true
+                    }
+                },
+                {
+                    "name": "forceBid",
+                    "label": "forceBid",
+                    "enc": "euint32",
+                    "proof": "forceBidProof",
+                    "ui": {
+                        "kind": "number",
+                        "placeholder": "0 - 4294967295"
+                    },
+                    "constraints": {
+                        "required": true,
+                        "min": 0,
+                        "max": 4294967295
+                    }
+                },
+                {
+                    "name": "forceBidProof",
+                    "hidden": true
+                }
+            ],
+            "tx": {
+                "buttonLabel": "Admin Settle",
+                "confirm": {
+                    "enabled": true,
+                    "title": "Admin action",
+                    "body": "Use only in demo environments."
+                }
+            }
+        }
+    ],
+    "helpers": {
+        "encrypt": {
+            "enabled": true,
+            "presets": [
+                {
+                    "id": "enc-euint32",
+                    "label": "Encrypt euint32",
+                    "to": "euint32",
+                    "ui": {
+                        "kind": "number",
+                        "placeholder": "0 - 4294967295"
+                    },
+                    "constraints": {
+                        "min": 0,
+                        "max": 4294967295,
+                        "required": true
+                    }
+                },
+                {
+                    "id": "enc-euint16",
+                    "label": "Encrypt euint16",
+                    "to": "euint16",
+                    "ui": {
+                        "kind": "number",
+                        "placeholder": "0 - 65535"
+                    },
+                    "constraints": {
+                        "min": 0,
+                        "max": 65535,
+                        "required": true
+                    }
+                },
+                {
+                    "id": "enc-ebool",
+                    "label": "Encrypt ebool",
+                    "to": "ebool",
+                    "ui": {
+                        "kind": "toggle",
+                        "trueLabel": "true",
+                        "falseLabel": "false"
+                    },
+                    "constraints": {
+                        "required": true
+                    }
+                }
+            ]
+        },
+        "decrypt": {
+            "enabled": true,
+            "presets": [
+                {
+                    "id": "dec-euint32",
+                    "label": "Decrypt euint32",
+                    "type": "euint32",
+                    "ui": {
+                        "kind": "textarea",
+                        "placeholder": "Paste ciphertext hex"
+                    }
+                },
+                {
+                    "id": "dec-ebool",
+                    "label": "Decrypt ebool",
+                    "type": "ebool",
+                    "ui": {
+                        "kind": "textarea",
+                        "placeholder": "Paste ciphertext hex"
+                    }
+                }
+            ],
+            "permissions": {
+                "showHint": true,
+                "hintText": "Decrypt requires permission for that ciphertext. If it fails, check allow/allowThis logic in the contract."
+            }
+        }
+    },
+    "dev": {
+        "strict": {
+            "validateFnExistsInAbi": true,
+            "validateArgsExistInAbi": true,
+            "validateProofTargetsExistInAbi": true,
+            "allowVirtualArgs": true,
+            "requireContractFieldInFunctions": true
+        }
+    }
+}
