@@ -25,9 +25,9 @@ function App() {
         {!manifest ? (
           <ManifestLoader onLoad={setManifest} />
         ) : (
-          <ContractInteraction 
-            manifest={manifest} 
-            onReset={() => setManifest(null)} 
+          <ContractInteraction
+            manifest={manifest}
+            onReset={() => setManifest(null)}
           />
         )}
       </div>

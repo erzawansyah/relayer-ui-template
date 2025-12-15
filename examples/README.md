@@ -5,17 +5,23 @@ Folder ini berisi contoh-contoh manifest untuk menguji berbagai jenis smart cont
 ## File-file Manifest:
 
 ### 1. `manifest-counter.json`
+
 Contract counter sederhana dengan fungsi:
+
 - **Read**: `count()` - Membaca nilai counter saat ini
 - **Write**: `increment()`, `decrement()`, `setCount(uint256)`, `addToCount(uint256)`
 
 ### 2. `manifest-erc20.json`
+
 Standard ERC20 token dengan fungsi-fungsi:
+
 - **Read**: `name()`, `symbol()`, `decimals()`, `totalSupply()`, `balanceOf(address)`, `allowance(address,address)`
 - **Write**: `transfer(address,uint256)`, `approve(address,uint256)`, `transferFrom(address,address,uint256)`, `mint(address,uint256)`
 
 ### 3. `manifest-storage.json`
+
 Contract storage untuk berbagai tipe data:
+
 - **Read**: `storedNumber()`, `storedString()`, `storedAddress()`, `storedBool()`, `getItem(string)`
 - **Write**: `storeNumber(uint256)`, `storeString(string)`, `storeAddress(address)`, `storeBool(bool)`, `setItem(string,string)`
 
@@ -60,7 +66,7 @@ Contract storage untuk berbagai tipe data:
 ## Tipe Data yang Didukung:
 
 - `uint256`, `uint128`, `uint8`, dll
-- `int256`, `int128`, `int8`, dll  
+- `int256`, `int128`, `int8`, dll
 - `address`
 - `string`
 - `bool`

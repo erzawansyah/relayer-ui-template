@@ -1,137 +1,137 @@
 {
-  "name": "Simple Storage",
-  "address": "0x9876543210987654321098765432109876543210",
-  "chainId": 31337,
-  "description": "Contract for storing and retrieving various data types",
-  "abi": [
-    {
-      "name": "storedNumber",
-      "type": "function",
-      "stateMutability": "view",
-      "inputs": [],
-      "outputs": [
+    "name": "Simple Storage",
+    "address": "0x9876543210987654321098765432109876543210",
+    "chainId": 31337,
+    "description": "Contract for storing and retrieving various data types",
+    "abi": [
         {
-          "name": "",
-          "type": "uint256"
-        }
-      ]
-    },
-    {
-      "name": "storedString",
-      "type": "function",
-      "stateMutability": "view",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "name": "storedAddress",
-      "type": "function",
-      "stateMutability": "view",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ]
-    },
-    {
-      "name": "storedBool",
-      "type": "function",
-      "stateMutability": "view",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ]
-    },
-    {
-      "name": "getItem",
-      "type": "function",
-      "stateMutability": "view",
-      "inputs": [
-        {
-          "name": "key",
-          "type": "string"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "name": "storeNumber",
-      "type": "function",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        {
-          "name": "num",
-          "type": "uint256"
-        }
-      ],
-      "outputs": []
-    },
-    {
-      "name": "storeString",
-      "type": "function",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        {
-          "name": "str",
-          "type": "string"
-        }
-      ],
-      "outputs": []
-    },
-    {
-      "name": "storeAddress",
-      "type": "function",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        {
-          "name": "addr",
-          "type": "address"
-        }
-      ],
-      "outputs": []
-    },
-    {
-      "name": "storeBool",
-      "type": "function",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        {
-          "name": "value",
-          "type": "bool"
-        }
-      ],
-      "outputs": []
-    },
-    {
-      "name": "setItem",
-      "type": "function",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        {
-          "name": "key",
-          "type": "string"
+            "name": "storedNumber",
+            "type": "function",
+            "stateMutability": "view",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ]
         },
         {
-          "name": "value",
-          "type": "string"
+            "name": "storedString",
+            "type": "function",
+            "stateMutability": "view",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "storedAddress",
+            "type": "function",
+            "stateMutability": "view",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address"
+                }
+            ]
+        },
+        {
+            "name": "storedBool",
+            "type": "function",
+            "stateMutability": "view",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "getItem",
+            "type": "function",
+            "stateMutability": "view",
+            "inputs": [
+                {
+                    "name": "key",
+                    "type": "string"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "storeNumber",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+                {
+                    "name": "num",
+                    "type": "uint256"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "storeString",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+                {
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "storeAddress",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+                {
+                    "name": "addr",
+                    "type": "address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "storeBool",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+                {
+                    "name": "value",
+                    "type": "bool"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setItem",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+                {
+                    "name": "key",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "string"
+                }
+            ],
+            "outputs": []
         }
-      ],
-      "outputs": []
-    }
-  ]
+    ]
 }
