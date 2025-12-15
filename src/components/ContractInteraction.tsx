@@ -18,37 +18,37 @@ export function ContractInteraction({ manifest, onReset }: Props) {
     return (
         <div className="w-full max-w-4xl">
             {/* Contract Info */}
-            <div className="mb-4 p-4 bg-blue-900 rounded-lg">
+            <div className="mb-3 p-3 bg-blue-900 rounded-lg">
                 <div className="flex items-start justify-between">
-                    <div>
-                        <h2 className="text-2xl font-bold mb-2">{manifest.name}</h2>
+                    <div className="flex-1 min-w-0">
+                        <h2 className="text-xl font-bold mb-1">{manifest.name}</h2>
                         {manifest.description && (
-                            <p className="text-gray-300 text-sm mb-2">{manifest.description}</p>
+                            <p className="text-gray-300 text-xs mb-1">{manifest.description}</p>
                         )}
-                        <div className="text-sm">
-                            <div className="text-gray-400">Contract Address:</div>
-                            <div className="font-mono">{manifest.address}</div>
+                        <div className="text-xs">
+                            <span className="text-gray-400">Address:</span>
+                            <div className="font-mono truncate">{manifest.address}</div>
                         </div>
                         {manifest.chainId && (
-                            <div className="text-sm mt-1">
-                                <span className="text-gray-400">Chain ID:</span> {manifest.chainId}
+                            <div className="text-xs">
+                                <span className="text-gray-400">Chain:</span> {manifest.chainId}
                             </div>
                         )}
                     </div>
                     <button
                         onClick={onReset}
-                        className="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-sm"
+                        className="ml-2 px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-xs whitespace-nowrap"
                     >
-                        Load Different Contract
+                        Change
                     </button>
                 </div>
             </div>
 
             {/* Read Functions */}
             {readFunctions.length > 0 && (
-                <div className="mb-6">
-                    <h3 className="text-xl font-semibold mb-3 px-2">Read Functions</h3>
-                    <div className="space-y-3">
+                <div className="mb-4">
+                    <h3 className="text-base font-semibold mb-2 px-1">Read Functions</h3>
+                    <div className="space-y-2">
                         {readFunctions.map((func, idx) => (
                             <ContractFunctionRenderer
                                 key={`read-${idx}`}
@@ -64,8 +64,8 @@ export function ContractInteraction({ manifest, onReset }: Props) {
             {/* Write Functions */}
             {writeFunctions.length > 0 && (
                 <div>
-                    <h3 className="text-xl font-semibold mb-3 px-2">Write Functions</h3>
-                    <div className="space-y-3">
+                    <h3 className="text-base font-semibold mb-2 px-1">Write Functions</h3>
+                    <div className="space-y-2">
                         {writeFunctions.map((func, idx) => (
                             <ContractFunctionRenderer
                                 key={`write-${idx}`}

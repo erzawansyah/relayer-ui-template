@@ -59,12 +59,12 @@ export function ManifestLoader({ onLoad }: Props) {
     }
 
     return (
-        <div className="p-4 bg-blue-900 rounded-lg">
-            <h2 className="text-xl font-semibold mb-3">Load Contract Manifest</h2>
-            <div className="mb-3">
+        <div className="p-3 bg-blue-900 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-semibold">Load Contract Manifest</h2>
                 <button
                     onClick={loadExample}
-                    className="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-sm"
+                    className="px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-xs"
                 >
                     Load Example
                 </button>
@@ -73,16 +73,16 @@ export function ManifestLoader({ onLoad }: Props) {
                 value={manifestText}
                 onChange={(e) => setManifestText(e.target.value)}
                 placeholder='Paste contract manifest JSON here...'
-                className="w-full h-48 p-3 bg-gray-800 text-white rounded border border-gray-600 font-mono text-sm"
+                className="w-full h-32 p-2 bg-gray-800 text-white rounded border border-gray-600 font-mono text-xs"
             />
             {error && (
-                <div className="mt-2 p-2 bg-red-900 text-red-200 rounded text-sm">
+                <div className="mt-2 p-2 bg-red-900 text-red-200 rounded text-xs">
                     {error}
                 </div>
             )}
             <button
                 onClick={handleLoad}
-                className="mt-3 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors w-full"
+                className="mt-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded transition-colors w-full text-sm font-medium"
             >
                 Load Contract
             </button>

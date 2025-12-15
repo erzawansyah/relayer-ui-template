@@ -80,27 +80,27 @@ export function ContractFunctionRenderer({ contractAddress, contractFunction, ab
     }
 
     return (
-        <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
-            <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold">{contractFunction.name}</h3>
-                <span className={`px-2 py-1 rounded text-xs ${isReadFunction ? 'bg-blue-700' : 'bg-orange-700'
+        <div className="p-2.5 bg-gray-800 rounded border border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold">{contractFunction.name}</h3>
+                <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${isReadFunction ? 'bg-blue-700' : 'bg-orange-700'
                     }`}>
                     {isReadFunction ? 'READ' : 'WRITE'}
                 </span>
             </div>
 
             {contractFunction.inputs.length > 0 && (
-                <div className="space-y-2 mb-3">
+                <div className="space-y-1.5 mb-2">
                     {contractFunction.inputs.map((input, idx) => (
                         <div key={idx}>
-                            <label className="block text-sm text-gray-400 mb-1">
-                                {input.name || `param${idx}`} ({input.type})
+                            <label className="block text-xs text-gray-400 mb-0.5">
+                                {input.name || `param${idx}`} <span className="text-gray-500">({input.type})</span>
                             </label>
                             <input
                                 type="text"
                                 value={inputValues[input.name] || ''}
                                 onChange={(e) => handleInputChange(input.name, e.target.value)}
-                                className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white"
+                                className="w-full px-2 py-1 bg-gray-900 border border-gray-600 rounded text-sm text-white"
                                 placeholder={`Enter ${input.type}`}
                             />
                         </div>
@@ -111,19 +111,19 @@ export function ContractFunctionRenderer({ contractAddress, contractFunction, ab
             <button
                 onClick={handleCall}
                 disabled={isPending || isConfirming}
-                className={`w-full px-4 py-2 rounded-lg transition-colors ${isReadFunction
-                        ? 'bg-blue-600 hover:bg-blue-700'
-                        : 'bg-orange-600 hover:bg-orange-700'
+                className={`w-full px-3 py-1.5 rounded transition-colors text-sm font-medium ${isReadFunction
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-orange-600 hover:bg-orange-700'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-                {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Call Function'}
+                {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Call'}
             </button>
 
             {/* Results Display */}
             {isReadFunction && readResult !== null && (
-                <div className="mt-3 p-3 bg-gray-900 rounded border border-gray-700">
-                    <div className="text-sm text-gray-400 mb-1">Result:</div>
-                    <div className="font-mono text-sm break-all">
+                <div className="mt-2 p-2 bg-gray-900 rounded border border-gray-700">
+                    <div className="text-xs text-gray-400 mb-1">Result:</div>
+                    <div className="font-mono text-xs break-all">
                         {typeof readResult === 'object' && readResult !== null && 'error' in readResult
                             ? <span className="text-red-400">{String(readResult.error)}</span>
                             : JSON.stringify(typeof readResult === 'object' && readResult !== null && 'toString' in readResult ? readResult.toString() : readResult, null, 2)
@@ -133,11 +133,11 @@ export function ContractFunctionRenderer({ contractAddress, contractFunction, ab
             )}
 
             {!isReadFunction && hash && (
-                <div className="mt-3 p-3 bg-gray-900 rounded border border-gray-700">
-                    <div className="text-sm text-gray-400 mb-1">Transaction Hash:</div>
-                    <div className="font-mono text-sm break-all">{hash}</div>
+                <div className="mt-2 p-2 bg-gray-900 rounded border border-gray-700">
+                    <div className="text-xs text-gray-400 mb-1">TX Hash:</div>
+                    <div className="font-mono text-xs break-all">{hash}</div>
                     {isSuccess && (
-                        <div className="mt-2 text-green-400 text-sm">✓ Transaction confirmed!</div>
+                        <div className="mt-1 text-green-400 text-xs">✓ Confirmed!</div>
                     )}
                 </div>
             )}
