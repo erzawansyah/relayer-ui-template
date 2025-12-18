@@ -3,12 +3,13 @@ import { useAccount } from "wagmi"
 import Header from "./components/Header"
 import ConnectBox from "./components/ConnectBox"
 import ThemeController from "./components/ThemeController"
-import { useContractLoader, type UseContractLoaderReturn } from "./hooks/useContractLoader"
+import { useContractLoader, type UseContractLoaderReturn } from "./lib/hooks/useContractLoader"
 import ContractInfo from "./components/ContractInfo"
 import ContractTabs from "./components/tabs/ContractTabs"
 import ReadmeTab from "./components/tabs/ReadmeTab"
 import StatesTab from "./components/tabs/StatesTab"
 import FunctionsTab from "./components/tabs/FunctionsTab"
+import FhevmStatus from "./components/FhevmStatus"
 
 // Dynamically get all contract folders from src/contracts directory
 const getAvailableContracts = () => {
@@ -87,7 +88,7 @@ function App() {
                   }`}
                 onClick={() => setActive(contract)}
               >
-                {contract.replace('fhe-', '').toUpperCase()}
+                {contract}
               </button>
             ))}
           </div>
@@ -106,6 +107,8 @@ function App() {
           )
         }
       </div>
+      {/* FHEVM Status */}
+      <FhevmStatus />
     </div>
   )
 }

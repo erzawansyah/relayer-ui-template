@@ -35,13 +35,15 @@ export function useContractLoader(slug: string): UseContractLoaderReturn {
     setIsLoading(true);
 
     Promise.all([
-      import(`../contracts/${slug}/abi.json`).then(
+      import(`../../contracts/${slug}/abi.json`).then(
         (m) => m.default as { address: `0x${string}`; abi: Abi }
       ),
-      import(`../contracts/${slug}/metadata.ts`).then(
+      import(`../../contracts/${slug}/metadata.ts`).then(
         (m) => m.metadata as ContractMetadataType
       ),
-      import(`../contracts/${slug}/ui.ts`).then((m) => m.ui as ContractUIType),
+      import(`../../contracts/${slug}/ui.ts`).then(
+        (m) => m.ui as ContractUIType
+      ),
     ])
       .then(([abi, metadata, ui]) => {
         if (cancelled) return;

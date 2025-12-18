@@ -1,4 +1,4 @@
-import type { ContractStateVariableType } from "../../types/ui";
+import type { ContractStateVariableType } from "../../lib/types/ui";
 
 interface StatesTabProps {
     states: ContractStateVariableType[];

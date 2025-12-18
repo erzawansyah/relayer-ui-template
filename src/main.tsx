@@ -7,6 +7,8 @@ import '@rainbow-me/rainbowkit/styles.css'
 import './index.css'
 import App from './App.tsx'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { FhevmProvider } from './lib/fhevm/FhevmProvider.tsx'
+
 
 const queryClient = new QueryClient()
 
@@ -20,7 +22,9 @@ createRoot(document.getElementById('root')!).render(
             appName: "FHEVM StarterKit",
           }}
         >
-          <App />
+          <FhevmProvider>
+            <App />
+          </FhevmProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

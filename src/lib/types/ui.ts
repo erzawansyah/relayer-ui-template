@@ -34,7 +34,8 @@ export type FheSolidityType =
   | "eint64"
   | "eint128"
   | "eint256"
-  | "ebool";
+  | "ebool"
+  | "eaddress";
 
 export type ExternalFheSolidityType =
   | "externalEuint8"
@@ -50,7 +51,8 @@ export type ExternalFheSolidityType =
   | "externalEint64"
   | "externalEint128"
   | "externalEint256"
-  | "externalEbool";
+  | "externalEbool"
+  | "externalEaddress";
 
 export type FunctionInputType = NativeSolidityType | ExternalFheSolidityType;
 

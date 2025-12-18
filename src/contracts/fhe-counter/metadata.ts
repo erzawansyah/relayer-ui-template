@@ -1,4 +1,4 @@
-import type { ContractMetadataType } from "../../types/metadata";
+import type { ContractMetadataType } from "../../lib/types/metadata";
 
 export const metadata: ContractMetadataType = {
   contract_file: "FHECounter.sol",

@@ -1,4 +1,4 @@
-import { type ContractMetadataType } from "../types/metadata"
+import { type ContractMetadataType } from "../lib/types/metadata"
 
 interface ContractInfoProps {
     address?: `0x${string}` | string | null,
