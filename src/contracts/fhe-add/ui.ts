@@ -1,4 +1,4 @@
-import type { ContractUIType } from "../types/ui";
+import type { ContractUIType } from "../../types/ui";
 
 export const ui: ContractUIType = {
   summary: {

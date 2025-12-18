@@ -3,14 +3,14 @@ import type { Abi } from "viem";
 import type { ContractMetadataType } from "../types/metadata";
 import type { ContractUIType } from "../types/ui";
 
-interface UseContractLoaderState {
+export interface UseContractLoaderState {
   address: `0x${string}` | string | null;
   abi: Abi;
   metadata: ContractMetadataType;
   ui: ContractUIType;
 }
 
-interface UseContractLoaderReturn {
+export interface UseContractLoaderReturn {
   data: {
     address: `0x${string}` | string | null;
     abi: Abi;
@@ -38,10 +38,10 @@ export function useContractLoader(slug: string): UseContractLoaderReturn {
       import(`../contracts/${slug}/abi.json`).then(
         (m) => m.default as { address: `0x${string}`; abi: Abi }
       ),
-      import(`../contracts/${slug}/metadata`).then(
+      import(`../contracts/${slug}/metadata.ts`).then(
         (m) => m.metadata as ContractMetadataType
       ),
-      import(`../contracts/${slug}/ui`).then((m) => m.ui as ContractUIType),
+      import(`../contracts/${slug}/ui.ts`).then((m) => m.ui as ContractUIType),
     ])
       .then(([abi, metadata, ui]) => {
         if (cancelled) return;

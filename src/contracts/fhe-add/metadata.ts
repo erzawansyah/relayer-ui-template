@@ -1,6 +1,6 @@
-import type { MetadataType } from "../types/metadata";
+import type { ContractMetadataType } from "../../types/metadata";
 
-export const metadata: MetadataType = {
+export const metadata: ContractMetadataType = {
   contract_file: "FHEAdd.sol",
   contract_name: "FHEAdd",
   contract_address: "",

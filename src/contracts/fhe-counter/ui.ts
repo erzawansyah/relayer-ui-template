@@ -1,78 +1,80 @@
-import type { ContractUIType } from "../types/ui";
+import type { ContractUIType } from "../../types/ui";
 
 export const ui: ContractUIType = {
   summary: {
-    file: "FHEAdd.sol",
-    name: "FHEAdd",
-    slug: "fhe-add",
-    label: "FHE Add",
+    file: "FHECounter.sol",
+    name: "FHECounter",
+    slug: "fhe-counter",
+    label: "FHE Counter",
     description:
-      "This contract demonstrates a simple addition application using Fully Homomorphic Encryption (FHE).",
+      "An encrypted counter that supports increment and decrement operations using Fully Homomorphic Encryption (FHE).",
     details:
-      "This contract stores a counter as encrypted data (euint32). The counter can be incremented or decremented using encrypted inputs without ever decrypting the stored value on-chain.",
+      "This example stores a counter value as encrypted data (euint32). Users can update the counter by submitting encrypted inputs along with valid proofs. All arithmetic operations are performed directly on ciphertexts, and decryption permission for the updated counter is granted to the caller.",
   },
-  states: [],
+
+  states: [
+    {
+      name: "_count",
+      type: "euint32",
+    },
+  ],
+
   functions: [
     {
-      name: "setA",
-      type: "write",
-      description: "Store encrypted input A into the contract.",
-      inputs: [
-        {
-          name: "inputA",
-          type: "externalEuint8",
-          helper: "The encrypted value to be stored as A.",
-        },
-        {
-          name: "inputProof",
-          type: "bytes",
-          helper: "Proof generated during encryption.",
-        },
-      ],
-      outputs: [],
-      config: {
-        proofParam: "inputProof",
-      },
-    },
-    {
-      name: "setB",
-      type: "write",
-      description: "Store encrypted input B into the contract.",
-      inputs: [
-        {
-          name: "inputB",
-          type: "externalEuint8",
-          helper: "The encrypted value to be stored as B.",
-        },
-        {
-          name: "inputProof",
-          type: "bytes",
-          helper: "Proof generated during encryption.",
-        },
-      ],
-      outputs: [],
-      config: {
-        proofParam: "inputProof",
-      },
-    },
-    {
-      name: "computeAPlusB",
-      type: "write",
-      description: "Compute the sum of encrypted A and B, store the result.",
-      inputs: [],
-      outputs: [],
-    },
-    {
-      name: "getResult",
+      name: "getCount",
       type: "read",
-      description: "Retrieve the encrypted result of A + B.",
+      description: "Retrieve the current encrypted counter value.",
       inputs: [],
       outputs: [
         {
-          name: "result",
-          type: "euint8",
+          name: "count",
+          type: "euint32",
         },
       ],
+    },
+    {
+      name: "increment",
+      type: "write",
+      description:
+        "Increment the encrypted counter by a specified encrypted value.",
+      inputs: [
+        {
+          name: "inputEuint32",
+          type: "externalEuint32",
+          helper: "Encrypted uint32 value to add to the counter.",
+        },
+        {
+          name: "inputProof",
+          type: "bytes",
+          helper: "Proof generated during encryption.",
+        },
+      ],
+      outputs: [],
+      config: {
+        proofParam: "inputProof",
+      },
+    },
+    {
+      name: "decrement",
+      type: "write",
+      description:
+        "Decrement the encrypted counter by a specified encrypted value.",
+      inputs: [
+        {
+          name: "inputEuint32",
+          type: "externalEuint32",
+          helper: "Encrypted uint32 value to subtract from the counter.",
+        },
+        {
+          name: "inputProof",
+          type: "bytes",
+          helper: "Proof generated during encryption.",
+        },
+      ],
+      outputs: [],
+      config: {
+        proofParam: "inputProof",
+      },
     },
   ],
 };
