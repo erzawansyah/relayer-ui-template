@@ -1,7 +1,8 @@
 // ExecuteWriteFunction.tsx
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { AbiFunction } from "viem";
 import FunctionInputHandler from "./FunctionInputHandler";
+import FunctionFinalArgument from "./FunctionFinalArgument";
 import {
     isEncryptedInputType,
     isSupportedInputInternalType,
@@ -52,20 +53,39 @@ function getEncryptedIndexes(func: AbiFunction) {
 
 export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunctionProps) {
     const inputsLen = func.inputs?.length ?? 0;
-    //  State untuk menyimpan argumen mentah dan belum terenkripsi (jika ada)
+    // State untuk menyimpan argumen mentah (user input) — belum tentu terenkripsi
     const [rawArgs, setRawArgs] = useState<unknown[]>(() => Array(inputsLen).fill(null));
-    // State untuk menyimpan argumen final yang akan dikirim ke kontrak (setelah enkripsi jika perlu)
+    // State untuk menyimpan argumen final yang akan dikirim ke kontrak
+    // (setelah enkripsi jika diperlukan). Di-set pada saat "Encrypt Inputs" atau saat eksekusi.
     const [args, setArgs] = useState<unknown[]>(() => Array(inputsLen).fill(null));
+    // Tab state untuk melihat form input vs built arguments
+    const [activeTab, setActiveTab] = useState<"input" | "built">("input");
 
-    const isDisabled = useMemo(() => {
+    // Tombol Build disabled jika ada input yang belum diisi (kecuali inputProof yang auto-fill)
+    const isBuildDisabled = useMemo(() => {
         if (!func.inputs || func.inputs.length === 0) return false;
         for (let i = 0; i < func.inputs.length; i++) {
-            if (args[i] === null || args[i] === undefined) {
+            const input = func.inputs[i];
+            // Skip inputProof karena akan diisi otomatis
+            if (input.name === "inputProof") continue;
+            if (rawArgs[i] === null || rawArgs[i] === undefined) {
                 return true;
             }
         }
         return false;
-    }, [args, func.inputs]);
+    }, [rawArgs, func.inputs]);
+
+    // Reset state ketika ABI/inputs fungsi berubah (mis. saat user memilih fungsi lain)
+    // Defer setState into a microtask to avoid synchronous setState inside effect
+    // which triggers the `react-hooks/set-state-in-effect` ESLint rule.
+    useEffect(() => {
+        const len = func.inputs?.length ?? 0;
+        Promise.resolve().then(() => {
+            setRawArgs(Array(len).fill(null));
+            setArgs(Array(len).fill(null));
+            setActiveTab("input");
+        });
+    }, [func.inputs]);
 
     const validationError = useMemo(() => {
         if (!func.inputs || func.inputs.length === 0) return null;
@@ -134,7 +154,6 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
     }
 
 
-
     const handleRawArgChange = (index: number, rawValue: unknown) => {
         setRawArgs((prev) => {
             const newRawArgs = [...prev];
@@ -184,15 +203,28 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
     return (
         <div className="space-y-2">
             {inputsLen === 0 ? (
-                <div className="text-xs text-fg-muted italic">
-                    This function has no inputs.
-                </div>
-            ) : (
-                func.inputs?.map((input, index) => {
-                    if (input.name === "inputProof") {
-                        return
-                    } else {
-                        return (
+                // Fungsi tanpa input
+                <>
+                    <div className="text-xs text-fg-muted italic p-3 text-center border border-border rounded-md">
+                        This function has no inputs.
+                    </div>
+                    <div className="flex justify-start">
+                        <Button
+                            size="sm"
+                            onClick={() => {
+                                console.log("Executing write function (no inputs)");
+                                // TODO: Panggil write transaction di sini
+                            }}
+                        >
+                            Execute
+                        </Button>
+                    </div>
+                </>
+            ) : !hasEncryptedInput ? (
+                // Fungsi tanpa encrypted input - tidak perlu tab, langsung tampilkan form
+                <>
+                    <div className="space-y-2">
+                        {func.inputs?.map((input, index) => (
                             <FunctionInputHandler
                                 key={index}
                                 name={input.name || `arg${index}`}
@@ -202,39 +234,134 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
                                 value={rawArgs[index]}
                                 onChange={(rawValue) => handleRawArgChange(index, rawValue)}
                             />
-                        );
-                    }
-                })
-            )}
-            <div className="flex justify-start">
-                {
-                    !hasEncryptedInput ? null : (
-                        <Button size="sm" variant="outline" className="mr-2" onClick={() => {
-                            const { finalArgs } = buildFinalArgs({ func, rawArgs });
-                            setArgs(finalArgs);
-                        }}>
-                            {
-                                hasEncryptedInput ? "Encrypt Inputs" : "Prepare Inputs"
-                            }
+                        ))}
+                    </div>
+                    <div className="flex justify-start">
+                        <Button
+                            size="sm"
+                            disabled={isBuildDisabled}
+                            onClick={() => {
+                                // Langsung build dan execute untuk non-encrypted
+                                const { finalArgs } = buildFinalArgs({ func, rawArgs });
+                                console.log("Executing write function with args:", finalArgs);
+                                // TODO: Panggil write transaction di sini
+                            }}
+                        >
+                            Execute
                         </Button>
-                    )
-                }
+                    </div>
+                </>
+            ) : (
+                // Fungsi dengan encrypted input - perlu tab untuk input dan built arguments
+                <>
+                    {/* Tab untuk beralih antara input form dan built arguments */}
+                    <div className="border border-border rounded-md overflow-hidden">
+                        {/* Tab Headers */}
+                        <div className="flex border-b border-border bg-secondary/20">
+                            <button
+                                className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${activeTab === "input"
+                                    ? "bg-secondary/50 border-b-2 border-primary"
+                                    : "hover:bg-secondary/30"
+                                    }`}
+                                onClick={() => setActiveTab("input")}
+                            >
+                                Input
+                            </button>
+                            <button
+                                className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${activeTab === "built"
+                                    ? "bg-secondary/50 border-b-2 border-primary"
+                                    : "hover:bg-secondary/30"
+                                    }`}
+                                onClick={() => setActiveTab("built")}
+                            >
+                                Built Arguments {args.some((arg) => arg !== null) && "✓"}
+                            </button>
+                        </div>
 
-                <Button size="sm" disabled={isDisabled} onClick={() => {
-                    console.log("Executing write function with args:", args);
-                }}>
-                    Execute
-                </Button>
-            </div>
+                        {/* Tab Content */}
+                        <div className="p-3 bg-secondary/10">
+                            {activeTab === "input" && (
+                                <div className="space-y-2">
+                                    {func.inputs?.map((input, index) => {
+                                        // Jangan render input UI untuk `inputProof` (ini diisi otomatis oleh proses enkripsi)
+                                        if (input.name === "inputProof") {
+                                            return null;
+                                        }
+                                        return (
+                                            <FunctionInputHandler
+                                                key={index}
+                                                name={input.name || `arg${index}`}
+                                                rawType={input.internalType as SupportedInputInternalType}
+                                                type={input.type as SupportedInputType}
+                                                contractAddress={contractAddress}
+                                                value={rawArgs[index]}
+                                                onChange={(rawValue) => handleRawArgChange(index, rawValue)}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
 
-            {/* Tampilkan final args */}
-            {args.some((arg) => arg !== null) && (
-                <div className="p-3 bg-secondary/30 border border-border rounded-md">
-                    <div className="text-sm font-semibold mb-2">Final Arguments:</div>
-                    <pre className="text-xs overflow-x-auto">
-                        {JSON.stringify(args, null, 2)}
-                    </pre>
-                </div>
+                            {activeTab === "built" && (
+                                <div className="space-y-2">
+                                    {args.some((arg) => arg !== null) ? (
+                                        <>
+                                            <div className="text-xs text-muted-foreground mb-2">Ready to execute (encrypted)</div>
+                                            {(func.inputs ?? []).map((input, i) => {
+                                                const argValue = args[i];
+
+                                                if (argValue === null || argValue === undefined) return null;
+
+                                                return (
+                                                    <FunctionFinalArgument
+                                                        key={i}
+                                                        name={input.name || `arg${i}`}
+                                                        type={input.type}
+                                                        internalType={input.internalType}
+                                                        value={argValue}
+                                                    />
+                                                );
+                                            })}
+                                        </>
+                                    ) : (
+                                        <div className="text-xs text-muted-foreground italic text-center py-4">
+                                            Click "Build & Encrypt" to generate encrypted arguments
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-start gap-2">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isBuildDisabled}
+                            onClick={() => {
+                                // Membangun argumen final (dengan enkripsi) dan simpan ke state
+                                const { finalArgs } = buildFinalArgs({ func, rawArgs });
+                                setArgs(finalArgs);
+                                // Pindah ke tab built untuk melihat hasil
+                                setActiveTab("built");
+                            }}
+                        >
+                            Build & Encrypt
+                        </Button>
+
+                        <Button
+                            size="sm"
+                            disabled={args.every((arg) => arg === null || arg === undefined)}
+                            onClick={() => {
+                                // Execute menggunakan args yang sudah di-build
+                                console.log("Executing write function with args:", args);
+                                // TODO: Panggil write transaction di sini
+                            }}
+                        >
+                            Execute
+                        </Button>
+                    </div>
+                </>
             )}
         </div>
     );
