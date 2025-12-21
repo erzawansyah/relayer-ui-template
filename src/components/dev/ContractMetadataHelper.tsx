@@ -51,9 +51,6 @@ export default function ContractMetadataHelper() {
 
                 <h3 className="text-lg font-semibold mt-4 mb-2">ABI</h3>
                 <pre>{JSON.stringify(data?.abi, null, 2)}</pre>
-
-                <h3 className="text-lg font-semibold mt-4 mb-2">UI</h3>
-                <pre>{JSON.stringify(data?.ui, null, 2)}</pre>
             </div>
             <Button
                 className="absolute top-4 right-4"

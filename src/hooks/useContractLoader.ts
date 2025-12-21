@@ -33,32 +33,83 @@ export function useContractLoader(slug: string): UseContractLoaderReturn {
     setError(null);
     setIsLoading(true);
 
-    Promise.all([
-      import(`../contracts/${slug}/abi.json`).then(
-        (m) => m.default as { address: `0x${string}`; abi: Abi }
-      ),
-      import(`../contracts/${slug}/metadata.ts`).then(
-        (m) => m.metadata as ContractMetadataType
-      ),
-    ])
-      .then(([abi, metadata]) => {
+    (async () => {
+      try {
+        // Prefer project imports during development (bundler can resolve)
+        const [abiModule, metadataModule] = await Promise.all([
+          import(`../contracts/${slug}/abi.json`).then(
+            (m) => m.default as { address: `0x${string}`; abi: Abi }
+          ),
+          import(`../contracts/${slug}/metadata.ts`).then(
+            (m) => m.metadata as ContractMetadataType
+          ),
+        ]);
+
         if (cancelled) return;
 
-        console.log("Contract loaded:", { abi, metadata });
+        console.log("Contract loaded (module):", {
+          abi: abiModule,
+          metadata: metadataModule,
+        });
 
         timeoutId = window.setTimeout(() => {
           if (cancelled) return;
-          setData({ address: abi.address, abi: abi.abi, metadata });
+          setData({
+            address: abiModule.address,
+            abi: abiModule.abi,
+            metadata: metadataModule,
+          });
           setIsLoading(false);
         }, 300);
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        setError(
-          e instanceof Error ? e.message : "Failed to load contract files"
-        );
-        setIsLoading(false);
-      });
+
+        return;
+      } catch (e) {
+        console.error("Module import failed, trying public fetch...", e);
+        // Fallback for built app where contract files live under `public/contracts`
+        try {
+          const [abiRes, metadataRes] = await Promise.all([
+            fetch(`/contracts/${slug}/abi.json`),
+            fetch(`/contracts/${slug}/metadata.json`),
+          ]);
+
+          if (!abiRes.ok || !metadataRes.ok) {
+            throw new Error("Failed to fetch contract assets from /contracts");
+          }
+
+          const abiJson = (await abiRes.json()) as {
+            address: `0x${string}`;
+            abi: Abi;
+          };
+          const metadataJson =
+            (await metadataRes.json()) as ContractMetadataType;
+
+          if (cancelled) return;
+
+          console.log("Contract loaded (public):", {
+            abi: abiJson,
+            metadata: metadataJson,
+          });
+
+          timeoutId = window.setTimeout(() => {
+            if (cancelled) return;
+            setData({
+              address: abiJson.address,
+              abi: abiJson.abi,
+              metadata: metadataJson,
+            });
+            setIsLoading(false);
+          }, 300);
+
+          return;
+        } catch (err) {
+          if (cancelled) return;
+          setError(
+            err instanceof Error ? err.message : "Failed to load contract files"
+          );
+          setIsLoading(false);
+        }
+      }
+    })();
 
     return () => {
       cancelled = true;

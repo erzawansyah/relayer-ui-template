@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@base-ui/react": "^1.0.0",
     "@fhevm/mock-utils": "^0.1.0",
     "@fontsource-variable/nunito-sans": "^5.2.7",
     "@phosphor-icons/react": "^2.1.10",

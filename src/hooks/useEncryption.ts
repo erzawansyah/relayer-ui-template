@@ -1,8 +1,7 @@
 import { useFhevmContext } from "@/lib/fhevm/useFhevmContext";
 import { isEncryptedInputType } from "@/lib/typeValidator";
 import type { EncryptedInputTypes } from "@/types/functions";
-import type { AbiFunction } from "node_modules/abitype/dist/types/abi";
-import { bytesToHex } from "viem";
+import { bytesToHex, type AbiParameter, type AbiFunction } from "viem";
 import { useAccount } from "wagmi";
 
 export type UseEncryptResult = {
@@ -19,7 +18,7 @@ export const useEncryption = () => {
     const encryptedIdx: number[] = [];
     let proofIndex = -1;
 
-    inputs.forEach((inp, i) => {
+    inputs.forEach((inp: AbiParameter, i: number) => {
       if (inp.name === "inputProof") proofIndex = i;
       if (inp.internalType && isEncryptedInputType(inp.internalType)) {
         encryptedIdx.push(i);

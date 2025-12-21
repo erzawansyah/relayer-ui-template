@@ -12,15 +12,33 @@ interface ContractContextType {
 
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
 
-// Dynamically get all contract folders from src/contracts directory
-const getAvailableContracts = () => {
-    const contractModules = import.meta.glob('/src/contracts/*/metadata.ts', { eager: true });
-    const contractNames = Object.keys(contractModules).map(path => {
-        const match = path.match(/\/src\/contracts\/(.+?)\/metadata\.ts/);
-        return match ? match[1] : null;
-    }).filter(Boolean) as string[];
+// Get available contracts. Prefer module glob in dev, fall back to public manifest in production.
+const getAvailableContracts = async (): Promise<string[]> => {
+    try {
+        // vite dev: metadata.ts modules may exist inside src
+        const contractModules = import.meta.glob('/src/contracts/*/metadata.ts', { eager: true }) as Record<string, unknown>;
+        const names = Object.keys(contractModules)
+            .map((path) => {
+                const match = path.match(/\/src\/contracts\/(.+?)\/metadata\.ts/);
+                return match ? match[1] : null;
+            })
+            .filter(Boolean) as string[];
 
-    return contractNames;
+        if (names.length > 0) return names;
+    } catch (e) {
+        console.error("Module glob import failed:", e);
+        // ignore — fallback to manifest
+    }
+
+    try {
+        const res = await fetch('/contracts/index.json');
+        if (!res.ok) throw new Error('Failed to fetch contracts manifest');
+        const list = (await res.json()) as string[];
+        return list;
+    } catch (e) {
+        console.error("Failed to load contracts manifest:", e);
+        return [];
+    }
 };
 
 export function ContractProvider({ children }: { children: ReactNode }) {
@@ -30,16 +48,14 @@ export function ContractProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const loadContracts = async () => {
-            // Get contracts dynamically from folder structure
-            const availableContracts = getAvailableContracts();
+            const availableContracts = await getAvailableContracts();
             setContracts(availableContracts);
 
-            // Set first contract as active
             if (availableContracts.length > 0 && !active) {
                 setActive(availableContracts[0]);
             }
         };
-        loadContracts();
+        void loadContracts();
     }, [active]);
 
     const value = { contracts, active, setActive, data, error, isLoading };
