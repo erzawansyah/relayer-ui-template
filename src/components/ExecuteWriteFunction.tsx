@@ -9,10 +9,14 @@ import {
     isSupportedInputType,
 } from "@/lib/typeValidator";
 import type {
+    EncryptedInputTypes,
     SupportedInputInternalType,
     SupportedInputType,
 } from "@/types/functions";
 import { Button } from "./ui/button";
+import { useEncryption } from "@/hooks/useEncryption";
+import { useWriteContract } from "wagmi";
+import FunctionTxConfirmation from "./FunctionTxConfirmation";
 
 interface ExecuteWriteFunctionProps {
     func: AbiFunction;
@@ -24,33 +28,6 @@ type EncryptResult = {
     proof: string;
 };
 
-function encrypt(values: unknown[]): EncryptResult {
-    const handles = values.map((val, i) => {
-        return `enc_${i}_${String(val)}`;
-    });
-
-    return {
-        handles,
-        proof: "dummy-proof",
-    };
-}
-
-
-function getEncryptedIndexes(func: AbiFunction) {
-    const inputs = func.inputs ?? [];
-    const encryptedIdx: number[] = [];
-    let proofIndex = -1;
-
-    inputs.forEach((inp, i) => {
-        if (inp.name === "inputProof") proofIndex = i;
-        if (inp.internalType && isEncryptedInputType(inp.internalType)) {
-            encryptedIdx.push(i);
-        }
-    });
-
-    return { encryptedIdx, proofIndex };
-}
-
 export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunctionProps) {
     const inputsLen = func.inputs?.length ?? 0;
     // State untuk menyimpan argumen mentah (user input) — belum tentu terenkripsi
@@ -58,8 +35,19 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
     // State untuk menyimpan argumen final yang akan dikirim ke kontrak
     // (setelah enkripsi jika diperlukan). Di-set pada saat "Encrypt Inputs" atau saat eksekusi.
     const [args, setArgs] = useState<unknown[]>(() => Array(inputsLen).fill(null));
+    // tx hash state, untuk menampilkan hasil eksekusi
+    const [txHash, setTxHash] = useState<string | null>(null);
+
     // Tab state untuk melihat form input vs built arguments
     const [activeTab, setActiveTab] = useState<"input" | "built">("input");
+    // Loading state untuk proses enkripsi
+    const [isEncrypting, setIsEncrypting] = useState(false);
+    // Loading state untuk proses eksekusi
+    const [isExecuting, setIsExecuting] = useState(false);
+
+    const { encrypt, getEncryptedIndexes } = useEncryption();
+
+    const { writeContractAsync } = useWriteContract()
 
     // Tombol Build disabled jika ada input yang belum diisi (kecuali inputProof yang auto-fill)
     const isBuildDisabled = useMemo(() => {
@@ -84,6 +72,8 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
             setRawArgs(Array(len).fill(null));
             setArgs(Array(len).fill(null));
             setActiveTab("input");
+            setIsEncrypting(false);
+            setIsExecuting(false);
         });
     }, [func.inputs]);
 
@@ -162,10 +152,10 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
         });
     }
 
-    const buildFinalArgs = (params: {
+    const buildFinalArgs = async (params: {
         func: AbiFunction;
         rawArgs: unknown[];
-    }): { finalArgs: unknown[]; encryptResult?: EncryptResult } => {
+    }): Promise<{ finalArgs: unknown[]; encryptResult?: EncryptResult }> => {
         const { func, rawArgs } = params;
         const inputs = func.inputs ?? [];
 
@@ -179,10 +169,15 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
         }
 
         // 1. Ambil nilai raw yang perlu dienkripsi (berdasarkan ABI order)
-        const valuesToEncrypt = encryptedIdx.map((i) => rawArgs[i]);
+        const valuesToEncrypt = encryptedIdx.map((i) => {
+            return {
+                type: inputs[i].internalType as EncryptedInputTypes,
+                value: rawArgs[i],
+            };
+        });
 
         // 2. Dummy encrypt
-        const encryptResult = encrypt(valuesToEncrypt);
+        const encryptResult = await encrypt(valuesToEncrypt, contractAddress);
 
         // 3. Scatter ciphertext ke posisi ABI yang benar
         encryptedIdx.forEach((abiIndex, j) => {
@@ -197,8 +192,61 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
         return { finalArgs };
     }
 
+    const handleExecution = async () => {
+        try {
+            setIsExecuting(true);
+            // Jika tidak ada argumen terenkripsi, gunakan rawArgs langsung
+            if (!hasEncryptedInput) {
+                const { finalArgs } = await buildFinalArgs({ func, rawArgs });
+                setArgs(finalArgs);
+            }
+            // final args tidak boleh null/undefined
+            for (let i = 0; i < args.length; i++) {
+                if (args[i] === null || args[i] === undefined) {
+                    console.error("Cannot execute: argument", i, "is not built yet.");
+                    return;
+                }
+            }
+            // delay 100 ms to show loading state
+            await new Promise((resolve) => setTimeout(resolve, 2500));
+
+            if (args.length !== inputsLen) {
+                console.error("Arguments length mismatch.");
+                return;
+            }
+            const tx = await writeContractAsync({
+                address: contractAddress,
+                abi: [func],
+                functionName: func.name,
+                args: args,
+            });
+            console.log("Transaction submitted:", tx);
+            setTxHash(tx)
+        } catch (error) {
+            console.error("Execution failed:", error);
+        } finally {
+            setIsExecuting(false);
+        }
+    }
+
+    const handleBuildAndEncrypt = async () => {
+        try {
+            setIsEncrypting(true);
+            // delay 100 ms to show loading state
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
 
+            // Membangun argumen final (dengan enkripsi) dan simpan ke state
+            const { finalArgs } = await buildFinalArgs({ func, rawArgs });
+            setArgs(finalArgs);
+            // Pindah ke tab built untuk melihat hasil
+            setActiveTab("built");
+        } catch (error) {
+            console.error("Encryption failed:", error);
+        } finally {
+            setIsEncrypting(false);
+        }
+    }
 
     return (
         <div className="space-y-2">
@@ -211,12 +259,10 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
                     <div className="flex justify-start">
                         <Button
                             size="sm"
-                            onClick={() => {
-                                console.log("Executing write function (no inputs)");
-                                // TODO: Panggil write transaction di sini
-                            }}
+                            disabled={isExecuting}
+                            onClick={handleExecution}
                         >
-                            Execute
+                            {isExecuting ? "Executing..." : "Execute"}
                         </Button>
                     </div>
                 </>
@@ -239,15 +285,10 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
                     <div className="flex justify-start">
                         <Button
                             size="sm"
-                            disabled={isBuildDisabled}
-                            onClick={() => {
-                                // Langsung build dan execute untuk non-encrypted
-                                const { finalArgs } = buildFinalArgs({ func, rawArgs });
-                                console.log("Executing write function with args:", finalArgs);
-                                // TODO: Panggil write transaction di sini
-                            }}
+                            disabled={isBuildDisabled || isExecuting}
+                            onClick={handleExecution}
                         >
-                            Execute
+                            {isExecuting ? "Executing..." : "Execute"}
                         </Button>
                     </div>
                 </>
@@ -337,32 +378,24 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
                         <Button
                             size="sm"
                             variant="outline"
-                            disabled={isBuildDisabled}
-                            onClick={() => {
-                                // Membangun argumen final (dengan enkripsi) dan simpan ke state
-                                const { finalArgs } = buildFinalArgs({ func, rawArgs });
-                                setArgs(finalArgs);
-                                // Pindah ke tab built untuk melihat hasil
-                                setActiveTab("built");
-                            }}
+                            disabled={isBuildDisabled || isEncrypting || args.some((arg) => arg !== null && arg !== undefined)}
+                            onClick={handleBuildAndEncrypt}
                         >
-                            Build & Encrypt
+                            {isEncrypting ? "Encrypting..." : "Build & Encrypt"}
                         </Button>
 
                         <Button
                             size="sm"
-                            disabled={args.every((arg) => arg === null || arg === undefined)}
-                            onClick={() => {
-                                // Execute menggunakan args yang sudah di-build
-                                console.log("Executing write function with args:", args);
-                                // TODO: Panggil write transaction di sini
-                            }}
+                            disabled={args.every((arg) => arg === null || arg === undefined) || isEncrypting || isExecuting}
+                            onClick={handleExecution}
                         >
-                            Execute
+                            {isExecuting ? "Executing..." : "Execute"}
                         </Button>
                     </div>
                 </>
             )}
+
+            {txHash && <FunctionTxConfirmation txHash={txHash as `0x${string}`} />}
         </div>
     );
 }

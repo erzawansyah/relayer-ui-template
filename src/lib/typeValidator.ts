@@ -111,7 +111,7 @@ export function isEncryptedBoolType(v: string): boolean {
 }
 
 export function identifyInputType(v: string): {
-  rawField: "bytes" | "number" | "address" | "bool" | null;
+  rawField: "string" | "bytes" | "number" | "address" | "bool" | null;
   isEncrypted: boolean;
   arrayDepth: number;
 } {
@@ -139,6 +139,9 @@ export function identifyInputType(v: string): {
   }
   if (isBoolType(v)) {
     return { rawField: "bool", isEncrypted: false, arrayDepth: depth };
+  }
+  if (v === "string" || v === "string[]") {
+    return { rawField: "string", isEncrypted: false, arrayDepth: depth };
   }
   return { rawField: "bytes", isEncrypted: false, arrayDepth: depth };
 }
