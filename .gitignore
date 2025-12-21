@@ -30,4 +30,5 @@ dist-ssr
 
 # Contract examples
 /src/contracts/
-/public/contracts/
+/public/contracts/index.json
+/public/contracts/*/

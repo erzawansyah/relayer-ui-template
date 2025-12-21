@@ -4,10 +4,12 @@ export interface MetadataAuthorType {
   url?: string;
 }
 
+export type ContractAddress = Record<number, `0x${string}`>;
+
 export interface ContractMetadataType {
   contract_file: string;
   contract_name: string;
-  contract_address?: string;
+  contract_address?: ContractAddress;
   name: string;
   label: string;
   description: string;
