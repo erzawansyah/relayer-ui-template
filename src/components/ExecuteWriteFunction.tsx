@@ -93,6 +93,8 @@ export function ExecuteWriteFunction({ func, contractAddress }: ExecuteWriteFunc
                 throw new Error("Arguments are not ready for execution");
             }
 
+            // execution log removed
+
             const tx = await writeContractAsync({
                 address: contractAddress,
                 abi: [func],
