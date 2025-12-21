@@ -7,6 +7,7 @@ import { WagmiProvider } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { FhevmProvider } from './lib/fhevm/FhevmProvider.tsx'
 import { ContractProvider } from './context/ContractContext.tsx'
+import { Toaster } from "@/components/ui/sonner"
 import '@rainbow-me/rainbowkit/styles.css'
 import './index.css'
 
@@ -27,6 +28,7 @@ createRoot(document.getElementById('root')!).render(
           <FhevmProvider>
             <ContractProvider>
               <App />
+              <Toaster position="top-right" />
             </ContractProvider>
           </FhevmProvider>
         </RainbowKitProvider>

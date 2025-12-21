@@ -5,7 +5,7 @@ import type { AbiFunction } from "node_modules/abitype/dist/types/abi";
 import { bytesToHex } from "viem";
 import { useAccount } from "wagmi";
 
-type EncryptResult = {
+export type UseEncryptResult = {
   handles: `0x${string}`[];
   proof: `0x${string}`;
 };
@@ -35,7 +35,7 @@ export const useEncryption = () => {
       value: unknown;
     }[],
     contractAddress: `0x${string}`
-  ): Promise<EncryptResult> {
+  ): Promise<UseEncryptResult> {
     if (!instance) {
       throw new Error("FHEVM instance is not initialized");
     }
