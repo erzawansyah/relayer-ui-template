@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Abi } from "viem";
 import type { ContractMetadataType } from "../types/metadata";
-import type { ContractUIType } from "../types/ui";
 
 export interface UseContractLoaderState {
   address: `0x${string}` | string | null;
   abi: Abi;
   metadata: ContractMetadataType;
-  ui: ContractUIType;
 }
 
 export interface UseContractLoaderReturn {
@@ -15,7 +13,6 @@ export interface UseContractLoaderReturn {
     address: `0x${string}` | string | null;
     abi: Abi;
     metadata: ContractMetadataType;
-    ui: ContractUIType;
   } | null;
   error: string | null;
   isLoading: boolean;
@@ -30,27 +27,28 @@ export function useContractLoader(slug: string): UseContractLoaderReturn {
     let cancelled = false;
     let timeoutId: number | undefined;
 
+    console.log("Loading contract:", slug);
+
     setData(null);
     setError(null);
     setIsLoading(true);
 
     Promise.all([
-      import(`../../contracts/${slug}/abi.json`).then(
+      import(`../contracts/${slug}/abi.json`).then(
         (m) => m.default as { address: `0x${string}`; abi: Abi }
       ),
-      import(`../../contracts/${slug}/metadata.ts`).then(
+      import(`../contracts/${slug}/metadata.ts`).then(
         (m) => m.metadata as ContractMetadataType
       ),
-      import(`../../contracts/${slug}/ui.ts`).then(
-        (m) => m.ui as ContractUIType
-      ),
     ])
-      .then(([abi, metadata, ui]) => {
+      .then(([abi, metadata]) => {
         if (cancelled) return;
+
+        console.log("Contract loaded:", { abi, metadata });
 
         timeoutId = window.setTimeout(() => {
           if (cancelled) return;
-          setData({ address: abi.address, abi: abi.abi, metadata, ui });
+          setData({ address: abi.address, abi: abi.abi, metadata });
           setIsLoading(false);
         }, 300);
       })
